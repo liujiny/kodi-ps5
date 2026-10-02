@@ -1,0 +1,16 @@
+PS5: drain closing TCP sockets with an explicitly nonblocking receive.
+
+HEAD-to-multi transfers clean up the previous keep-alive connection before
+sending GET. A blocking drain can wait for the peer's idle timeout.
+
+--- a/lib/cf-socket.c
++++ b/lib/cf-socket.c
+@@ -997,7 +997,7 @@
+        ctx->transport == TRNSPRT_TCP &&
+        (curlx_nonblock(ctx->sock, TRUE) >= 0)) {
+       unsigned char buf[1024];
+-      (void)sread(ctx->sock, buf, sizeof(buf));
++      (void)recv(ctx->sock, buf, sizeof(buf), MSG_DONTWAIT);
+     }
+   }
+   *done = TRUE;
